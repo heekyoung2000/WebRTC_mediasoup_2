@@ -141,32 +141,6 @@ connections.on("connection", async socket => {
 
         return router1;
     }
-
-    // socket.on("createRoom", async (callback) => {
-    //     if (router === undefined) {
-    //         router = await worker.createRouter({ mediaCodecs, });
-    //         console.log(`Router ID: ${router.id}`);
-    //     }
-
-    //     getRtpCapabilities(callback);
-    // })
-
-    // const getRtpCapabilities = (callback) => {
-    //     const rtpCapabilities = router.rtpCapabilities;
-
-    //     callback({ rtpCapabilities });
-    // }
-
-    // 사전에 정의된 mediaCodes를 바탕으로 router 생성
-    // router = await worker.createRouter({ mediaCodecs });
-
-    // socket.on("getRtpCapabilities", (callback) => {
-    //     const rtpCapabilities = router.rtpCapabilities;
-    //     console.log("rtp Capabilities", rtpCapabilities);
-
-    //     callback({ rtpCapabilities });
-    // })
-
     // transport 생성
     socket.on("createWebRtcTransport", async ({ consumer }, callback) => {
         const roomName = peers[socket.id].roomName;
@@ -375,7 +349,7 @@ const createWebRtcTransport = async (router) => {
                 listenIps: [
                     {
                         ip: '0.0.0.0', // replace with relevant IP address
-                        announcedIp: '127.0.0.1',
+                        announcedIp: '43.201.47.117',
                     }
                 ],
                 enableUdp: true,
@@ -397,14 +371,6 @@ const createWebRtcTransport = async (router) => {
                 console.log("transport closed");
             });
 
-            // callback({
-            //     params: {
-            //         id: transport.id,
-            //         iceParameters: transport.iceParameters,
-            //         iceCandidates: transport.iceCandidates,
-            //         dtlsParameters: transport.dtlsParameters,
-            //     }
-            // })
             resolve(transport);
         } catch (error) {
             reject(error);
