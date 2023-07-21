@@ -20,8 +20,8 @@ app.use("/sfu/:room", express.static(path.join(__dirname, "public")));
 
 // 서버, mediasoup 설정
 const httpsServer = https.createServer(app);
-httpsServer.listen(3000, () => {
-    console.log("Listening on port: http://localhost:3000");
+httpsServer.listen(2000, () => {
+    console.log("Listening on port: https://localhost:2000");
 });
 
 const io = new Server(httpsServer);
