@@ -1,6 +1,6 @@
 import express from "express";
 import { Server } from "socket.io";
-import https from "httpolyglot";
+import http from "http";
 import fs from "fs";
 import path from "path";
 import mediasoup, { getSupportedRtpCapabilities } from 'mediasoup';
@@ -13,18 +13,18 @@ app.get('*', (req, res, next) => {
 
     if (req.path.indexOf(path) == 0 && req.path.length > path.length) return next();
     
-    res.send(`You need to specify a room name in the path e.g. 'https://127.0.0.1/sfu/room'`);
+    res.send(`You need to specify a room name in the path e.g. 'http://127.0.0.1/sfu/room'`);
 });
 
 app.use("/sfu/:room", express.static(path.join(__dirname, "public")));
 
 // 서버, mediasoup 설정
-const httpsServer = https.createServer(app);
-httpsServer.listen(2000, () => {
-    console.log("Listening on port: https://localhost:2000");
+const httpServer = http.createServer(app);
+httpServer.listen(3000, () => {
+    console.log("Listening on port: http://localhost");
 });
 
-const io = new Server(httpsServer);
+const io = new Server(httpServer);
 const connections = io.of("/mediasoup");
 
 let worker;
@@ -348,9 +348,9 @@ const createWebRtcTransport = async (router) => {
             const webRtcTransport_options = {
                 listenIps: [
                     {
-                        ip: '172.31.5.109', // replace with relevant IP address
+                        ip: '0.0.0.0', // replace with relevant IP address
 
-                        announcedIp: '43.201.47.117',
+                        announcedIp: '127.0.0.1',
                     }
                 ],
                 enableUdp: true,
