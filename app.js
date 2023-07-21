@@ -1,6 +1,6 @@
 import express from "express";
 import { Server } from "socket.io";
-import http from "http";
+import https from "httpolyglot";
 import fs from "fs";
 import path from "path";
 import mediasoup, { getSupportedRtpCapabilities } from 'mediasoup';
@@ -13,18 +13,18 @@ app.get('*', (req, res, next) => {
 
     if (req.path.indexOf(path) == 0 && req.path.length > path.length) return next();
     
-    res.send(`You need to specify a room name in the path e.g. 'http://127.0.0.1/sfu/room'`);
+    res.send(`You need to specify a room name in the path e.g. 'https://127.0.0.1/sfu/room'`);
 });
 
 app.use("/sfu/:room", express.static(path.join(__dirname, "public")));
 
 // 서버, mediasoup 설정
-const httpServer = http.createServer(app);
-httpServer.listen(3000, () => {
+const httpsServer = https.createServer(app);
+httpsServer.listen(3000, () => {
     console.log("Listening on port: http://localhost:3000");
 });
 
-const io = new Server(httpServer);
+const io = new Server(httpsServer);
 const connections = io.of("/mediasoup");
 
 let worker;
