@@ -94,12 +94,17 @@ connections.on("connection", async socket => {
         transports = removeItems(transports, socket.id, "transport");
 
         const { roomName } = peers[socket.id];
+        // delete peers[socket.id];
+
+        if (roomName && rooms[roomName]) {
+            rooms[roomName].peers = rooms[roomName].peers.filter(socketId => socketId !== socket.id);
+        }
         delete peers[socket.id];
 
-        rooms[roomName] = {
-            router: rooms[roomName].router,
-            peers: rooms[roomName].peers.filter(socketId => socketId !== socket.id)
-        }
+        // rooms[roomName] = {
+        //     router: rooms[roomName].router,
+        //     peers: rooms[roomName].peers.filter(socketId => socketId !== socket.id)
+        // }
     });
 
     socket.on("joinRoom", async ({ roomName }, callback) => {
@@ -348,9 +353,9 @@ const createWebRtcTransport = async (router) => {
             const webRtcTransport_options = {
                 listenIps: [
                     {
-                        ip: '172.31.5.109', // replace with relevant IP address
+                        ip: '0.0.0.0', // replace with relevant IP address
 
-                        announcedIp: '43.201.47.117',
+                        announcedIp: '127.0.0.1',
                     }
                 ],
                 enableUdp: true,
