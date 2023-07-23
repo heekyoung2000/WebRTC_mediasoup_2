@@ -74,7 +74,7 @@ const joinRoom = () => {
 
 const getLocalStream = () => {
     navigator.mediaDevices.getUserMedia({
-        audio: true,
+        audio: false,
         video: {
             width: {
                 min: 640,
