@@ -1,6 +1,7 @@
 <html>
 
 <head>
+    <link rel="stylesheet" , href="https://unpkg.com/mvp.css">
     <style>
         button {
             margin: 2;
@@ -63,6 +64,11 @@
 <body>
 
     <body>
+
+        <div>
+            <h1 id="Head">Room Name</h1>
+        </div>
+        
         <div id="video">
             <table class="mainTable">
                 <tbody>
@@ -86,7 +92,15 @@
                 </tbody>
             </table>
         </div>
+        <button onclick="goHome()">Exit</button>
     </body>
+    <script>
+        const goHome = () => {
+            window.location.href = "/";
+        }
+        const roomHead = window.location.pathname.split('/')[2]
+        document.getElementById("Head").innerText = "Room Name : " + roomHead;
+    </script>
 </body>
 <footer>
     <script src="bundle.js"></script>

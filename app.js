@@ -8,22 +8,32 @@ import mediasoup, { getSupportedRtpCapabilities } from 'mediasoup';
 const __dirname = path.resolve();
 const app = express();
 
-app.get('*', (req, res, next) => {
-    const path = "/sfu/";
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
-    if (req.path.indexOf(path) == 0 && req.path.length > path.length) return next();
-    
-    res.send(`You need to specify a room name in the path e.g. 'http://127.0.0.1/sfu/room'`);
+app.get("/", (req, res) => {
+    res.sendFile(__dirname + "/public/views/home.html");
 });
 
-app.use("/sfu/:room", express.static(path.join(__dirname, "public")));
+app.get('/testdata', (req, res) => {
+    res.json(rooms);
+});
+
+app.get('*', (req, res, next) => {
+    const path = "/room/";
+
+    if (req.path.indexOf(path) == 0 && req.path.length > path.length) return next();
+    res.send("Wrong address");
+});
+
+app.use("/room/:roomName", express.static(path.join(__dirname, "public")));
+
 
 // 서버, mediasoup 설정
 const httpServer = http.createServer(app);
 httpServer.listen(3000, () => {
-    console.log("Listening on port: http://localhost");
+    console.log("Listening on port: http://localhost:3000");
 });
-
 const io = new Server(httpServer);
 const connections = io.of("/mediasoup");
 
@@ -33,6 +43,7 @@ let peers = {};
 let transports = [];
 let producers = [];
 let consumers = [];
+let checkRoom = {};
 
 // Worker 생성 함수
 const createWorker = async () => {
@@ -94,12 +105,20 @@ connections.on("connection", async socket => {
         transports = removeItems(transports, socket.id, "transport");
 
         const { roomName } = peers[socket.id];
+
+        if (roomName && rooms[roomName]) {
+            rooms[roomName].peers = rooms[roomName].peers.filter(socketId => socketId !== socket.id);
+            for (const room in rooms) {
+                if (rooms[room].peers.length === 0) {
+                    delete rooms[room];
+                }
+            }
+        }
+        
+
         delete peers[socket.id];
 
-        rooms[roomName] = {
-            router: rooms[roomName].router,
-            peers: rooms[roomName].peers.filter(socketId => socketId !== socket.id)
-        }
+        console.log(rooms);
     });
 
     socket.on("joinRoom", async ({ roomName }, callback) => {
@@ -117,10 +136,25 @@ connections.on("connection", async socket => {
             }
         }
 
+
+        console.log();
+        console.log(rooms);
+        for (const room in rooms) {
+            const name = room;
+            let roomLen = rooms[room].peers.length;
+
+            console.log(`방 이름 : ${name}, 참여 인원 : ${roomLen} 명`);
+        }
+        console.log();
+
         const rtpCapabilities = router1.rtpCapabilities;
 
         callback({ rtpCapabilities });
     });
+
+    socket.on("check", () => {
+        console.log("checked");
+    })
 
     const createRoom = async (roomName, socketId) => {
         let router1;
@@ -348,9 +382,9 @@ const createWebRtcTransport = async (router) => {
             const webRtcTransport_options = {
                 listenIps: [
                     {
-                        ip: '172.31.5.109', // replace with relevant IP address
+                        ip: '0.0.0.0', // replace with relevant IP address
 
-                        announcedIp: '43.201.47.117',
+                        announcedIp: '127.0.0.1',
                     }
                 ],
                 enableUdp: true,
