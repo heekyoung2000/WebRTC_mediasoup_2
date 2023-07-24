@@ -98,6 +98,7 @@
 
         }
 
+
         const sendData = (type) =>{
             const apiUrl = "/testdata2";
 
@@ -115,34 +116,17 @@
 
         const goToRoom = async (room, currentlen, gameMode) => {
             // 해당 방으로 이동합니다.
-            // await fetchData()
-            // .then(data =>{
-            //     for(const name in data){
-            //         let check
-            //         switch(data[name].roomType){
-            //             case "game1":
-            //                 check = 4;
-            //             case "game2":
-            //                 check = 2;
-            //             case "game3":
-            //                 check = 1;
-            //         }
-            //         if(name === room && data[name].peers.length === check){
-            //             temp = true;
-            //             alert("방이 꽉 찼습니다");
-            //         }
-            //     }
-            // })
             if (currentlen === gameMode) {
                 alert("방이 꽉 찼습니다");
             }
             else{
                 window.location.href = `/room/${room}`;
+
             }
             
         }
         refreshRooms();
-
+        
         createRoomForm.addEventListener("submit", handleCreateBtnClick);
     
     </script>
