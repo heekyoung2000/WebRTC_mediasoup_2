@@ -19,15 +19,7 @@ app.get('/testdata', (req, res) => {
     res.json(rooms);
 });
 
-app.get('*', (req, res, next) => {
-    const path = "/room/";
-
-    if (req.path.indexOf(path) == 0 && req.path.length > path.length) return next();
-    res.send("Wrong address");
-});
-
 app.use("/room/:roomName", express.static(path.join(__dirname, "public")));
-
 
 // 서버, mediasoup 설정
 const httpServer = http.createServer(app);
@@ -114,8 +106,6 @@ connections.on("connection", async socket => {
                 }
             }
         }
-        
-
         delete peers[socket.id];
 
         console.log(rooms);
@@ -135,8 +125,6 @@ connections.on("connection", async socket => {
                 isAdmin:  false,
             }
         }
-
-
         console.log();
         console.log(rooms);
         for (const room in rooms) {
@@ -376,15 +364,13 @@ connections.on("connection", async socket => {
 
 const createWebRtcTransport = async (router) => {
     return new Promise(async (resolve, reject) => {
-        
-    
         try {
             const webRtcTransport_options = {
                 listenIps: [
                     {
-                        ip: '0.0.0.0', // 172.31.5.109replace with relevant IP address
+                        ip: '0.0.0.0', // replace with relevant IP address
 
-                        announcedIp: '127.0.0.1',//43.201.47.117
+                        announcedIp: '127.0.0.1',
                     }
                 ],
                 enableUdp: true,
