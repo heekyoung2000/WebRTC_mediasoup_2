@@ -28,9 +28,15 @@
             window.location.href = `/room/${content}`;
         }
 
-        function goToRoom(room) {
+        function goToRoom(room,peerslen) {
             // 해당 방으로 이동합니다.
-            window.location.href = `/room/${room}`;
+            if(peerslen!=4){
+                window.location.href = `/room/${room}`;
+            }
+            else{
+                alert("인원이 다 찼습니다!");
+            }
+            
         }
 
         fetch('/testdata')
@@ -39,8 +45,9 @@
                 // 받아온 데이터를 사용합니다.
                 let rooms = '';
                 for(const room in data){
-                    rooms += `<div class="room">방 이름 : ${room} (접속 인원 : ${data[room].peers.length} 명)<br>`;
-                    rooms += `<button onclick="goToRoom('${room}')">Join</button><br></div>`;
+                        peerslen= data[room].peers.length;
+                        rooms += `<div class="room">방 이름 : ${room} (접속 인원 : ${data[room].peers.length}/4 명)<br>`;
+                        rooms += `<button onclick="goToRoom('${room}','${peerslen}')">Join</button><br></div>`;
                 }
                 document.getElementById('dataContainer').innerHTML = rooms;
             })
