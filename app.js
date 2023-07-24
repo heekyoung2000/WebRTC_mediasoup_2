@@ -4,12 +4,16 @@ import http from "http";
 import fs from "fs";
 import path from "path";
 import mediasoup, { getSupportedRtpCapabilities } from 'mediasoup';
+import bodyParser from 'body-parser'; 
 
 const __dirname = path.resolve();
 const app = express();
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
 app.get("/", (req, res) => {
     res.sendFile(__dirname + "/public/views/home.html");
@@ -18,6 +22,12 @@ app.get("/", (req, res) => {
 app.get('/testdata', (req, res) => {
     res.json(rooms);
 });
+
+app.post("/testdata2", (req, res) => {
+    const type = req.body;
+    gameMode = type["selectedValue"];
+    console.log("type from client: ", gameMode);
+})
 
 app.use("/room/:roomName", express.static(path.join(__dirname, "public")));
 
@@ -36,6 +46,7 @@ let transports = [];
 let producers = [];
 let consumers = [];
 let checkRoom = {};
+let gameMode;
 
 // Worker 생성 함수
 const createWorker = async () => {
@@ -122,7 +133,7 @@ connections.on("connection", async socket => {
             consumers: [],
             peerDetails: {
                 name: '',
-                isAdmin:  false,
+                isAdmin: false,
             }
         }
         console.log();
@@ -150,16 +161,23 @@ connections.on("connection", async socket => {
         if (rooms[roomName]) {
             router1 = rooms[roomName].router;
             peers = rooms[roomName].peers || [];
+            rooms[roomName] = {
+                router: router1,
+                peers: [...peers, socketId],
+                roomType: rooms[roomName].roomType
+            }
         } else {
             router1 = await worker.createRouter({ mediaCodecs, });
+            rooms[roomName] = {
+                router: router1,
+                peers: [...peers, socketId],
+                roomType: gameMode
+            }
         }
 
         console.log(`Router ID: ${router1.id}`, peers.length);
 
-        rooms[roomName] = {
-            router: router1,
-            peers: [...peers, socketId],
-        }
+        
 
         return router1;
     }
