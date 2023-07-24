@@ -5,50 +5,90 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet", href="https://unpkg.com/mvp.css">
     <title>Document</title>
+    <style>
+        #createForm{
+            margin: 0px auto;
+            width: 400px;
+        }
+    </style>
 </head>
 <body>
-    <form id="createRoom">
-        <input type="text", placeholder="Room Name", required>
-        <button>Create Room</button>
-    </form>
+    <div id="createForm">
+        <form id="createRoom">
+            <input type="text", placeholder="Room Name", required>
+            <select name="first" id="second">
+                <option value="game1">game1</option>
+                <option value="game2">game2</option>
+                <option value="game3">game3</option>
+            </select>
+            <button>Create Room</button>
+        </form>
+    </div>
 
     <div id="dataContainer"></div>
 
-
-    <script src="/socket.io/socket.io.js"></script>
     <script>
-        const socket = io();
         const createRoomForm = document.getElementById("createRoom");
+        // data 가져오기
+        const fetchData = ()=>{
+            return fetch("/testdata")
+            .then(response=>response.json())
+            .catch(error=>{
+                console.log(error);
+            })
+        }
 
-        const handleCreateBtnClick = (event)=>{
+        // 방 새로고침
+        const refreshRooms = ()=>{
+            fetchData()
+            .then(data => {
+                let rooms = '';
+                for (const room in data) {
+                    rooms += `<div class="room">방 이름 : ${room} (접속 인원 : ${data[room].peers.length} 명 / 최대 4 명)<br>`;
+                    rooms += `<button onclick="goToRoom('${room}')">Join</button><br></div>`;
+                }
+                document.getElementById('dataContainer').innerHTML = rooms;
+            }).catch(error => {
+                console.error('데이터 오류:', error);
+            });
+        }
+
+        const handleCreateBtnClick = async (event)=>{
             event.preventDefault();
             const input = createRoomForm.querySelector("input");
             let content = input.value;
-            alert(`Room: ${content} created!`);
+            let check = false;
+
+            await fetchData()
+            .then(data =>{
+                for(const room in data){
+                    if(room === content){
+                        alert("동일한 이름의 방이 존재합니다.");
+                        check = true;
+                        break;
+                    }
+                }
+            })
+            
+            if(check) return; // 동일한 방 체크
+
+            const selectElement = document.getElementById('second');
+
+            // 선택된 옵션의 value 값 가져오기
+            const selectedValue = selectElement.value;
+            
+            alert(`Room: ${content}(Type: ${selectedValue}) created!`);
+
             window.location.href = `/room/${content}`;
+
         }
 
         function goToRoom(room) {
             // 해당 방으로 이동합니다.
             window.location.href = `/room/${room}`;
         }
+        refreshRooms();
 
-        fetch('/testdata')
-            .then(response => response.json())
-            .then(data => {
-                // 받아온 데이터를 사용합니다.
-                let rooms = '';
-                for(const room in data){
-                    rooms += `<div class="room">방 이름 : ${room} (접속 인원 : ${data[room].peers.length} 명)<br>`;
-                    rooms += `<button onclick="goToRoom('${room}')">Join</button><br></div>`;
-                }
-                document.getElementById('dataContainer').innerHTML = rooms;
-            })
-            .catch(error => {
-                console.error('데이터를 가져오는 중 오류가 발생했습니다:', error);
-            });
-        
-        
         createRoomForm.addEventListener("submit", handleCreateBtnClick);
     
     </script>
