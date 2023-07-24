@@ -44,8 +44,21 @@
             .then(data => {
                 let rooms = '';
                 for (const room in data) {
-                    rooms += `<div class="room">방 이름 : ${room} (접속 인원 : ${data[room].peers.length} 명 / 최대 4 명)<br>`;
-                    rooms += `<button onclick="goToRoom('${room}')">Join</button><br></div>`;
+                    let gameMode;
+                    switch(data[room]["roomType"]){
+                        case "game1":
+                            gameMode = 4;
+                            break;
+                        case "game2":
+                            gameMode = 2;
+                            break;
+                        case "game3":
+                            gameMode = 1;
+                            break;
+                    }
+                    console.log(data[room]["roomType"]);
+                    rooms += `<div class="room">방 이름 : ${room} (접속 인원 : ${data[room].peers.length} 명 / 최대 ${gameMode} 명)<br>`;
+                    rooms += `<button onclick="goToRoom('${room}','${data[room].peers.length}','${gameMode}')">Join</button><br></div>`;
                 }
                 document.getElementById('dataContainer').innerHTML = rooms;
             }).catch(error => {
@@ -79,37 +92,40 @@
             
             alert(`Room: ${content}(Type: ${selectedValue}) created!`);
 
+            sendData({selectedValue});
+
             window.location.href = `/room/${content}`;
 
         }
 
-        function goToRoom(room,peerslen) {
+
+        const sendData = (type) =>{
+            const apiUrl = "/testdata2";
+
+            fetch(apiUrl, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(type)
+            })
+            .catch(error =>{
+                console.error("data error:", error);
+            })
+        }
+
+        const goToRoom = async (room, currentlen, gameMode) => {
             // 해당 방으로 이동합니다.
-            if(peerslen!=4){
-                window.location.href = `/room/${room}`;
+            if (currentlen === gameMode) {
+                alert("방이 꽉 찼습니다");
             }
             else{
-                alert("인원이 다 찼습니다!");
+                window.location.href = `/room/${room}`;
+
             }
             
         }
         refreshRooms();
-
-        fetch('/testdata')
-            .then(response => response.json())
-            .then(data => {
-                // 받아온 데이터를 사용합니다.
-                let rooms = '';
-                for(const room in data){
-                        peerslen= data[room].peers.length;
-                        rooms += `<div class="room">방 이름 : ${room} (접속 인원 : ${data[room].peers.length}/4 명)<br>`;
-                        rooms += `<button onclick="goToRoom('${room}','${peerslen}')">Join</button><br></div>`;
-                }
-                document.getElementById('dataContainer').innerHTML = rooms;
-            })
-            .catch(error => {
-                console.error('데이터를 가져오는 중 오류가 발생했습니다:', error);
-            });
         
         createRoomForm.addEventListener("submit", handleCreateBtnClick);
     
