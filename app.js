@@ -152,10 +152,6 @@ connections.on("connection", async socket => {
         callback({ rtpCapabilities });
     });
 
-    socket.on("check", () => {
-        console.log("checked");
-    })
-
     const createRoom = async (roomName, socketId) => {
         let router1;
         let peers = [];
