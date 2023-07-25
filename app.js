@@ -5,12 +5,18 @@ import fs from "fs";
 import path from "path";
 import mediasoup, { getSupportedRtpCapabilities } from 'mediasoup';
 import bodyParser from 'body-parser'; 
-import cors from "cors";
+// import cors from "cors";
 
 const __dirname = path.resolve();
 const app = express();
 
-app.use(cors());
+// app.use(cors());
+app.use(function (req, res, next) {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    next();
+});
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
