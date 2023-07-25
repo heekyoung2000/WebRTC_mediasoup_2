@@ -18,7 +18,8 @@
     "mediasoup": "^3.12.6",
     "mediasoup-client": "^3.6.98",
     "socket.io": "^4.7.1",
-    "socket.io-client": "^4.7.1"
+    "socket.io-client": "^4.7.1",
+    "watchify": "^4.0.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"
