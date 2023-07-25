@@ -5,10 +5,12 @@ import fs from "fs";
 import path from "path";
 import mediasoup, { getSupportedRtpCapabilities } from 'mediasoup';
 import bodyParser from 'body-parser'; 
+import cors from "cors";
 
 const __dirname = path.resolve();
 const app = express();
 
+app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
