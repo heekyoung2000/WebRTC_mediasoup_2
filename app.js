@@ -43,7 +43,12 @@ const httpServer = http.createServer(app);
 httpServer.listen(3000, () => {
     console.log("Listening on port: http://localhost:3000");
 });
-const io = new Server(httpServer);
+const io = new Server(httpServer, {
+    cors: {
+        origin: "http://localhost:5173",
+        methods: ["GET", "POST"]
+    }
+});
 const connections = io.of("/mediasoup");
 
 let worker;
