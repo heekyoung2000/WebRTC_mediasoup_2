@@ -25,6 +25,7 @@ app.get('/testdata', (req, res) => {
 
 app.post("/testdata2", (req, res) => {
     const type = req.body;
+    console.log(type);
     gameMode = type["selectedValue"];
     console.log("type from client: ", gameMode);
 })
@@ -386,9 +387,9 @@ const createWebRtcTransport = async (router) => {
             const webRtcTransport_options = {
                 listenIps: [
                     {
-                        ip: '0.0.0.0', // replace with relevant IP address
+                        ip: '43.201.47.117', //0.0.0.0 replace with relevant IP address
 
-                        announcedIp: '127.0.0.1',
+                        announcedIp: '172.31.5.109',//127.0.0.1
                     }
                 ],
                 enableUdp: true,
