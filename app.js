@@ -10,7 +10,7 @@ import cors from "cors";
 const __dirname = path.resolve();
 const app = express();
 
-// app.use(cors());
+app.use(cors());
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -42,8 +42,7 @@ httpServer.listen(3000, () => {
 });
 const io = new Server(httpServer, {
     cors: {
-        origin: "http://localhost:5173",
-        methods: ["GET", "POST"]
+        origin: "*"
     }
 });
 const connections = io.of("/mediasoup");
@@ -87,7 +86,9 @@ const mediaCodecs = [
         mimeType: "video/VP8",
         clockRate: 90000,
         parameters: {
-            "x-google-start-bitrate": 1000,
+            "x-google-start-bitrate": 300,
+            "max-fs": 3600,
+            "max-br": 500 
         },
     },
 ];
@@ -268,28 +269,18 @@ connections.on("connection", async socket => {
         callback(producerList);
     })
 
-    const informConsumers = (roomName, socketId, id) => {
-        console.log(`just joined, id ${id} ${roomName}, ${socketId}`);
 
-        producers.forEach(producerData => {
-            if (producerData.socketId !== socketId && producerData.roomName === roomName) {
-                const producerSocket = peers[producerData.socketId].socket;
-
-                producerSocket.emit("new-producer", { producerId: id });
-            }
-        })
-    }
-
-    const getTransport = (socketId) => {
-        const [producerTransport] = transports.filter(transport => transport.socketId === socketId && !transport.consumer);
-        return producerTransport.transport;
-    }
 
     // 만들어진 transport 연결
     socket.on("transport-connect", ({ dtlsParameters}) => {
         console.log("DTLS PARAMS...", { dtlsParameters });
         getTransport(socket.id).connect({ dtlsParameters });
     })
+
+    const getTransport = (socketId) => {
+        const [producerTransport] = transports.filter(transport => transport.socketId === socketId && !transport.consumer);
+        return producerTransport.transport;
+    }
 
     // 
     socket.on("transport-produce", async ({ kind, rtpParameters, appData }, callback) => {
@@ -316,6 +307,18 @@ connections.on("connection", async socket => {
             producersExist: producers.length > 1 ? true : false
         })
     })
+    
+    const informConsumers = (roomName, socketId, id) => {
+        console.log(`just joined, id ${id} ${roomName}, ${socketId}`);
+
+        producers.forEach(producerData => {
+            if (producerData.socketId !== socketId && producerData.roomName === roomName) {
+                const producerSocket = peers[producerData.socketId].socket;
+
+                producerSocket.emit("new-producer", { producerId: id });
+            }
+        })
+    }
 
     socket.on("transport-recv-connect", async ({ dtlsParameters, serverConsumerTransportId }) => {
         console.log(`DTLS PARAMS: ${dtlsParameters}`);
@@ -391,9 +394,9 @@ const createWebRtcTransport = async (router) => {
             const webRtcTransport_options = {
                 listenIps: [
                     {
-                        ip: '0.0.0.0', // replace with relevant IP address
+                        ip: '172.31.5.109', // replace with relevant IP address
 
-                        announcedIp: '127.0.0.1',
+                        announcedIp: '43.201.47.117',
                     }
                 ],
                 enableUdp: true,

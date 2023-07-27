@@ -8,14 +8,13 @@ const socket = io("/mediasoup")
 
 socket.on('connection-success', ({ socketId }) => {
     console.log(socketId)
-
     getLocalStream()
 })
 
-// window.addEventListener("beforeunload", function () {
-//     // 클라이언트가 인터넷 창을 닫기 전에 서버로 disconnect 이벤트를 전송
-//     socket.emit("check", {data: "Hello"});
-// });
+window.addEventListener("beforeunload", function () {
+    // 클라이언트가 인터넷 창을 닫기 전에 서버로 disconnect 이벤트를 전송
+    socket.emit("disconnect");
+});
 
 let device
 let rtpCapabilities
