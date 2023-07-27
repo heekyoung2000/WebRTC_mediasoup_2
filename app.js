@@ -1,11 +1,13 @@
 import express from "express";
-import { Server } from "socket.io";
 import http from "http";
-import fs from "fs";
 import path from "path";
-import mediasoup, { getSupportedRtpCapabilities } from 'mediasoup';
 import bodyParser from 'body-parser'; 
+import { Server } from "socket.io";
+import mediasoup from 'mediasoup';
 import cors from "cors";
+import { config } from 'dotenv';
+
+config();
 
 const __dirname = path.resolve();
 const app = express();
