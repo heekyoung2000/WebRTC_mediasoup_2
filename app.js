@@ -177,8 +177,6 @@ connections.on("connection", async socket => {
 
         console.log(`Router ID: ${router1.id}`, peers.length);
 
-        
-
         return router1;
     }
     // transport 생성
@@ -392,7 +390,6 @@ const createWebRtcTransport = async (router) => {
                 listenIps: [
                     {
                         ip: '172.31.5.109', // replace with relevant IP address
-
                         announcedIp: '43.201.47.117',
                     }
                 ],
@@ -429,7 +426,14 @@ dataConnections.on("connect", async socket => {
         socketId: socket.id,
     });
 
+    socket.on("get_game_data", (data) => {
+        socket.broadcast.emit("send_game_data", {data },() => {
+            console.log("success: send data")
+        })
+    })
+
     socket.on("disconnect", () => {
         console.log("data 소켓 연결 종료");
     });
 })
+
