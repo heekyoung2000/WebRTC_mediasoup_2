@@ -14,11 +14,9 @@ const app = express();
 
 app.use(cors());
 
-app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
 
 app.get("/", (req, res) => {
     res.sendFile(__dirname + "/public/views/home.html");
@@ -48,6 +46,7 @@ const io = new Server(httpServer, {
     }
 });
 const connections = io.of("/mediasoup");
+const dataConnections = io.of("/data");
 
 let worker;
 let rooms = {};
@@ -55,7 +54,6 @@ let peers = {};
 let transports = [];
 let producers = [];
 let consumers = [];
-let checkRoom = {};
 let gameMode;
 
 // Worker 생성 함수
@@ -77,12 +75,6 @@ worker = createWorker();
 
 // 사용할 오디오 및 비디오 코덱 정의
 const mediaCodecs = [
-    // {
-    //     kind: "audio",
-    //     mimeType: "audio/opus",
-    //     clockRate: 48000,
-    //     channels: 2,
-    // },
     {
         kind: "video",
         mimeType: "video/VP8",
@@ -284,12 +276,15 @@ connections.on("connection", async socket => {
         return producerTransport.transport;
     }
 
-    // 
     socket.on("transport-produce", async ({ kind, rtpParameters, appData }, callback) => {
         const producer = await getTransport(socket.id).produce({
             kind,
             rtpParameters,
         })
+
+        if (!peers[socket.id]) {
+            return;
+        } 
 
         const { roomName } = peers[socket.id];
 
@@ -426,3 +421,15 @@ const createWebRtcTransport = async (router) => {
         }
     })
 }
+
+// data 소켓
+dataConnections.on("connect", async socket => {
+    console.log("data 소켓 연결");
+    socket.emit("connection-success", {
+        socketId: socket.id,
+    });
+
+    socket.on("disconnect", () => {
+        console.log("data 소켓 연결 종료");
+    });
+})

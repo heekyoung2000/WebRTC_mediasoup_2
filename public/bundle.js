@@ -21857,26 +21857,29 @@ const mediasoupClient = require('mediasoup-client')
 
 const roomName = window.location.pathname.split('/')[2]
 
-const socket = io("/mediasoup")
+const socket = io("/mediasoup");
+const dataSocket = io("/data");
 
 socket.on('connection-success', ({ socketId }) => {
     console.log(socketId)
     getLocalStream()
 })
 
+dataSocket.on('connection-success', ({ socketId }) => {
+    console.log("data 소켓: ", socketId);
+})
+
 window.addEventListener("beforeunload", function () {
     // 클라이언트가 인터넷 창을 닫기 전에 서버로 disconnect 이벤트를 전송
     socket.emit("disconnect");
+    dataSocket.emit("disconnect");
 });
 
 let device
 let rtpCapabilities
 let producerTransport
 let consumerTransports = []
-let audioProducer
 let videoProducer
-let consumer
-let isProducer = false
 
 let params = {
     // mediasoup params
@@ -21886,30 +21889,18 @@ let params = {
             maxBitrate: 100000,
             scalabilityMode: 'S1T3',
         },
-        {
-            rid: 'r1',
-            maxBitrate: 300000,
-            scalabilityMode: 'S1T3',
-        },
-        {
-            rid: 'r2',
-            maxBitrate: 900000,
-            scalabilityMode: 'S1T3',
-        },
     ],
     codecOptions: {
-        videoGoogleStartBitrate: 1000
+        videoGoogleStartBitrate: 300
     }
 }
 
-let audioParams;
 let videoParams = { params };
 let consumingTransports = [];
 
 const streamSuccess = (stream) => {
-    localVideo.srcObject = stream
+    localVideo.srcObject = stream;
 
-    // audioParams = { track: stream.getAudioTracks()[0], ...audioParams };
     videoParams = { track: stream.getVideoTracks()[0], ...videoParams };
 
     joinRoom()
@@ -21926,7 +21917,6 @@ const joinRoom = () => {
 
 const getLocalStream = () => {
     navigator.mediaDevices.getUserMedia({
-        // audio: true,
         video: {
             width: {
                 min: 640,
@@ -22012,30 +22002,15 @@ const createSendTransport = () => { //
 
 const connectSendTransport = async () => {
    
-    // audioProducer = await producerTransport.produce(audioParams);
     videoProducer = await producerTransport.produce(videoParams);
-
-    // audioProducer.on('trackended', () => {
-    //     console.log('audio track ended')
-
-    //     // close audio track
-    // })
-
-    // audioProducer.on('transportclose', () => {
-    //     console.log('audio transport ended')
-
-    //     // close audio track
-    // })
 
     videoProducer.on('trackended', () => {
         console.log('video track ended')
-
         // close video track
     })
 
     videoProducer.on('transportclose', () => {
         console.log('video transport ended')
-
         // close video track
     })
 }
@@ -22117,12 +22092,8 @@ const connectRecvTransport = async (consumerTransport, remoteProducerId, serverC
         const newElem = document.createElement('div')
         newElem.setAttribute('id', `td-${remoteProducerId}`)
 
-        // if (params.kind == 'audio') {
-        //     newElem.innerHTML = '<audio id="' + remoteProducerId + '" autoplay></audio>'
-        // } else {
-            newElem.setAttribute('class', 'remoteVideo')
-            newElem.innerHTML = '<video id="' + remoteProducerId + '" autoplay class="video" ></video>'
-        // }
+        newElem.setAttribute('class', 'remoteVideo')
+        newElem.innerHTML = '<video id="' + remoteProducerId + '" autoplay class="video" ></video>'
 
         videoContainer.appendChild(newElem)
 
