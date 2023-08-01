@@ -11,17 +11,6 @@ import AWS from 'aws-sdk';
 
 config();
 
-//dynamoDB 설정
-const tableName = "test_db"
-const key = {
-    accessKeyId: "AKIAQAOWDSHMLK33KPPE",
-    secretAccessKey: "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",
-    region: 'ap-northeast-2'
-};
-AWS.config.update(key);
-const dynamoDB = new AWS.DynamoDB.DocumentClient();
-
-
 //변수 설정
 let worker;
 let peers = {};
@@ -108,20 +97,6 @@ connections.on("connection", async socket => {
 
         return items;
     }
-    async function delete_item(roomName) {
-        const params = {
-            TableName: tableName, // 테이블 이름 (원하는 이름으로 변경 가능)
-            Key: {
-                room_id: roomName
-            }
-        };
-        try {
-            await dynamoDB.delete(params).promise();
-            console.log("🧨🧨🧨🧨db 성공적으로 지움")
-        } catch (err) {
-            console.error("Error creating table:", err);
-        }
-    }
 
 
     socket.on("disconnect", () => {
@@ -136,7 +111,6 @@ connections.on("connection", async socket => {
             rooms[roomName].peers = rooms[roomName].peers.filter(socketId => socketId !== socket.id);
             for (const room in rooms) {
                 if (rooms[room].peers.length === 0) {
-                    delete_item(roomName); //db에서 roomName 삭제
                     delete rooms[room];
                 }
             }
@@ -179,17 +153,6 @@ connections.on("connection", async socket => {
     const createRoom = async (roomName, socketId) => {
         let router1;
         let peers = [];
-        //db 넣기
-        const put = {
-            TableName: tableName,
-            Item: {
-                room_id: roomName
-            }
-        }
-        dynamoDB.put(put, (e, d) => {
-            console.log("🧨🧨🧨🧨db 넣음")
-            console.log(e, d);
-        })
         if (rooms[roomName]) {
             router1 = rooms[roomName].router;
             peers = rooms[roomName].peers || [];
@@ -210,8 +173,6 @@ connections.on("connection", async socket => {
         }
 
         console.log(`Router ID: ${router1.id}`, peers.length);
-
-
 
         return router1;
     }
@@ -424,9 +385,8 @@ const createWebRtcTransport = async (router) => {
             const webRtcTransport_options = {
                 listenIps: [
                     {
-                        ip: '172.31.5.109', //0.0.0.0 replace with relevant IP address
-
-                        announcedIp: '43.201.47.117',//127.0.0.1
+                        ip: '172.31.5.109', // replace with relevant IP address
+                        announcedIp: '43.201.47.117',
                     }
                 ],
                 enableUdp: true,
@@ -462,7 +422,14 @@ dataConnections.on("connect", async socket => {
         socketId: socket.id,
     });
 
+    socket.on("get_game_data", (data) => {
+        socket.broadcast.emit("send_game_data", {data },() => {
+            console.log("success: send data")
+        })
+    })
+
     socket.on("disconnect", () => {
         console.log("data 소켓 연결 종료");
     });
 })
+
