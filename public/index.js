@@ -49,7 +49,6 @@ const streamSuccess = (stream) => {
     localVideo.srcObject = stream;
 
     videoParams = { track: stream.getVideoTracks()[0], ...videoParams };
-
     joinRoom()
 }
 
@@ -57,7 +56,6 @@ const joinRoom = () => {
     socket.emit('joinRoom', { roomName }, (data) => {
         console.log(`Router RTP Capabilities... ${data.rtpCapabilities}`)
         rtpCapabilities = data.rtpCapabilities
-
         createDevice()
     })
 }
