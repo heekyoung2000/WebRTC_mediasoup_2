@@ -21880,6 +21880,7 @@ let rtpCapabilities
 let producerTransport
 let consumerTransports = []
 let videoProducer
+let audioProducer
 
 let params = {
     // mediasoup params
@@ -21895,12 +21896,15 @@ let params = {
     }
 }
 
+let audioParams;
 let videoParams = { params };
 let consumingTransports = [];
 
 const streamSuccess = (stream) => {
     localVideo.srcObject = stream;
 
+    //🔊오디오 추가
+    audioParams = { track: stream.getAudioTracks()[0], ...audioParams };
     videoParams = { track: stream.getVideoTracks()[0], ...videoParams };
     joinRoom()
 }
@@ -21915,6 +21919,8 @@ const joinRoom = () => {
 
 const getLocalStream = () => {
     navigator.mediaDevices.getUserMedia({
+        //🔊오디오 추가
+        audio: true,
         video: {
             width: {
                 min: 640,
@@ -22000,7 +22006,21 @@ const createSendTransport = () => { //
 
 const connectSendTransport = async () => {
    
+    //🔊오디오 추가
+    audioProducer = await producerTransport.produce(audioParams);
     videoProducer = await producerTransport.produce(videoParams);
+
+    audioProducer.on('trackended', () => {
+        console.log('audio track ended')
+
+        // close audio track
+    })
+
+    audioProducer.on('transportclose', () => {
+        console.log('audio transport ended')
+
+        // close audio track
+    })
 
     videoProducer.on('trackended', () => {
         console.log('video track ended')
@@ -22090,9 +22110,13 @@ const connectRecvTransport = async (consumerTransport, remoteProducerId, serverC
         const newElem = document.createElement('div')
         newElem.setAttribute('id', `td-${remoteProducerId}`)
 
-        newElem.setAttribute('class', 'remoteVideo')
+        if (params.kind == 'audio') {
+            //append to the audio container
+            newElem.innerHTML = '<audio id="' + remoteProducerId + '" autoplay></audio>'
+        } else{
+             newElem.setAttribute('class', 'remoteVideo')
         newElem.innerHTML = '<video id="' + remoteProducerId + '" autoplay class="video" ></video>'
-
+        }
         videoContainer.appendChild(newElem)
 
         const { track } = consumer

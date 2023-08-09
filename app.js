@@ -69,6 +69,13 @@ worker = createWorker();
 // 사용할 오디오 및 비디오 코덱 정의
 const mediaCodecs = [
     {
+        kind: "audio",
+        mimeType: "audio/opus",
+        clockRate: 48000,
+        channels: 2,
+    },
+
+    {
         kind: "video",
         mimeType: "video/VP8",
         clockRate: 90000,
@@ -385,8 +392,8 @@ const createWebRtcTransport = async (router) => {
             const webRtcTransport_options = {
                 listenIps: [
                     {
-                        ip: '172.31.5.109', // replace with relevant IP address
-                        announcedIp: '43.201.47.117',
+                        ip: '172.31.5.109', //0.0.0.0 replace with relevant IP address
+                        announcedIp: '43.201.47.117', //127.0.0.1
                     }
                 ],
                 enableUdp: true,
